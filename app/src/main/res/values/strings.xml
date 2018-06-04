@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Weather Demo</string>
+    <string name="temperature">%.0f°F</string>
+    <string name="apparentTemperature">Feels like %.0f°</string>
+    <string name="highLow">Day %1$.0f°↑ • Night %2$.0f°↓</string>
+
+    <string name="darksky_attribution">Powered by <a href="https://darksky.net/poweredby/">Dark Sky</a></string>
+    <string name="flaticon_attribution">Icons made by <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepick</a> from <a href="https://www.flaticon.com/" title="Flaticon">Flaticon</a></string>
+</resources>

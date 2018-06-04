@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewModel"
+            type="com.birbeck.android.weatherdemo.ui.main.MainActivityViewModel" />
+
+        <variable
+            name="weather"
+            type="com.birbeck.android.weatherdemo.data.WeatherEntity" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/background">
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swiperefresh"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="@{weather == null ? View.GONE : View.VISIBLE}"
+            app:onRefreshListener="@{() -> viewModel.onRefresh(swiperefresh)}">
+
+            <android.support.constraint.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".ui.main.MainActivityFragment"
+                tools:showIn="@layout/activity_main">
+
+                <TextClock
+                    android:id="@+id/clock"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="16dp"
+                    android:format12Hour="MMM d, h:mm a"
+                    android:shadowColor="#94000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    android:textColor="#fff"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toTopOf="@+id/highLow"
+                    app:layout_constraintEnd_toStartOf="@+id/icon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="May 31, 5:46 PM" />
+
+                <TextView
+                    android:id="@+id/highLow"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:shadowColor="#94000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    android:text="@{@string/highLow(weather.highTemperature, weather.lowTemperature)}"
+                    android:textColor="#fff"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toTopOf="@+id/temperature"
+                    app:layout_constraintEnd_toStartOf="@+id/icon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/clock"
+                    tools:text="Day 60°↑•Night 51°↓" />
+
+                <TextView
+                    android:id="@+id/temperature"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:padding="0dp"
+                    android:shadowColor="#94000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    android:text="@{@string/temperature(weather.temperature)}"
+                    android:textColor="#fff"
+                    android:textSize="80sp"
+                    app:layout_constraintBottom_toTopOf="@+id/apparentTemperature"
+                    app:layout_constraintEnd_toStartOf="@+id/icon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/highLow"
+                    tools:text="58°F" />
+
+                <TextView
+                    android:id="@+id/apparentTemperature"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:shadowColor="#94000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    android:text="@{@string/apparentTemperature(weather.apparentTemperature)}"
+                    android:textColor="#fff"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toStartOf="@+id/icon"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/temperature"
+                    tools:text="Feels like 54°" />
+
+                <ImageView
+                    android:id="@+id/icon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:adjustViewBounds="true"
+                    android:padding="12dp"
+                    android:shadowColor="#94000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    app:layout_constraintBottom_toBottomOf="@+id/temperature"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/temperature"
+                    app:weatherIcon="@{weather.icon}"
+                    tools:src="@drawable/ic_partly_cloudy_day" />
+
+                <TextView
+                    android:id="@+id/summary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginStart="16dp"
+                    android:shadowColor="#94000000"
+                    android:shadowDx="1"
+                    android:shadowDy="1"
+                    android:shadowRadius="5"
+                    android:text="@{weather.summary}"
+                    android:textColor="#fff"
+                    android:textSize="16sp"
+                    app:layout_constraintEnd_toEndOf="@+id/icon"
+                    app:layout_constraintStart_toStartOf="@+id/icon"
+                    app:layout_constraintTop_toTopOf="@+id/apparentTemperature"
+                    tools:text="Partly Cloudy" />
+
+                <TextView
+                    android:id="@+id/darksky"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:autoLink="web"
+                    android:text="@string/darksky_attribution"
+                    app:layout_constraintBottom_toTopOf="@+id/flaticon"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/flaticon"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="8dp"
+                    android:autoLink="web"
+                    android:text="@string/flaticon_attribution"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            </android.support.constraint.ConstraintLayout>
+
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminate="true"
+            android:visibility="@{weather == null ? View.VISIBLE : View.GONE}" />
+
+    </FrameLayout>
+
+</layout>
