@@ -1,16 +1,12 @@
 package com.birbeck.android.weatherdemo.ui.main
 
 import android.Manifest
-import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
 import android.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
 import android.support.v4.app.Fragment
-import android.text.Html
-import android.text.method.LinkMovementMethod
-import android.text.util.Linkify
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,10 +20,10 @@ class MainActivityFragment : Fragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
-        mDataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
-
         mViewModel = ViewModelProviders.of(this).get(MainActivityViewModel::class.java)
-        mViewModel.getCurrent().observe(this, Observer { mDataBinding.weather = it })
+
+        mDataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false)
+        mDataBinding.setLifecycleOwner(this)
         mDataBinding.viewModel = mViewModel
 
         return mDataBinding.root

@@ -10,10 +10,6 @@
         <variable
             name="viewModel"
             type="com.birbeck.android.weatherdemo.ui.main.MainActivityViewModel" />
-
-        <variable
-            name="weather"
-            type="com.birbeck.android.weatherdemo.data.WeatherEntity" />
     </data>
 
     <FrameLayout
@@ -25,7 +21,7 @@
             android:id="@+id/swiperefresh"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="@{weather == null ? View.GONE : View.VISIBLE}"
+            android:visibility="@{viewModel.current == null ? View.GONE : View.VISIBLE}"
             app:onRefreshListener="@{() -> viewModel.onRefresh(swiperefresh)}">
 
             <android.support.constraint.ConstraintLayout
@@ -65,7 +61,7 @@
                     android:shadowDx="1"
                     android:shadowDy="1"
                     android:shadowRadius="5"
-                    android:text="@{@string/highLow(weather.highTemperature, weather.lowTemperature)}"
+                    android:text="@{@string/highLow(viewModel.current.highTemperature, viewModel.current.lowTemperature)}"
                     android:textColor="#fff"
                     android:textSize="16sp"
                     app:layout_constraintBottom_toTopOf="@+id/temperature"
@@ -85,7 +81,7 @@
                     android:shadowDx="1"
                     android:shadowDy="1"
                     android:shadowRadius="5"
-                    android:text="@{@string/temperature(weather.temperature)}"
+                    android:text="@{@string/temperature(viewModel.current.temperature)}"
                     android:textColor="#fff"
                     android:textSize="80sp"
                     app:layout_constraintBottom_toTopOf="@+id/apparentTemperature"
@@ -104,7 +100,7 @@
                     android:shadowDx="1"
                     android:shadowDy="1"
                     android:shadowRadius="5"
-                    android:text="@{@string/apparentTemperature(weather.apparentTemperature)}"
+                    android:text="@{@string/apparentTemperature(viewModel.current.apparentTemperature)}"
                     android:textColor="#fff"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toStartOf="@+id/icon"
@@ -127,7 +123,7 @@
                     app:layout_constraintBottom_toBottomOf="@+id/temperature"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintTop_toTopOf="@+id/temperature"
-                    app:weatherIcon="@{weather.icon}"
+                    app:weatherIcon="@{viewModel.current.icon}"
                     tools:src="@drawable/ic_partly_cloudy_day" />
 
                 <TextView
@@ -140,7 +136,7 @@
                     android:shadowDx="1"
                     android:shadowDy="1"
                     android:shadowRadius="5"
-                    android:text="@{weather.summary}"
+                    android:text="@{viewModel.current.summary}"
                     android:textColor="#fff"
                     android:textSize="16sp"
                     app:layout_constraintEnd_toEndOf="@+id/icon"
@@ -178,7 +174,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:indeterminate="true"
-            android:visibility="@{weather == null ? View.VISIBLE : View.GONE}" />
+            android:visibility="@{viewModel.current == null ? View.VISIBLE : View.GONE}" />
 
     </FrameLayout>
 
