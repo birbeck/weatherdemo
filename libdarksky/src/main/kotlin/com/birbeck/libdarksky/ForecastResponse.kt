@@ -2,6 +2,10 @@ package com.birbeck.libdarksky
 
 import com.squareup.moshi.Json
 
+sealed class ForecastResponse
+data class Success(val forecast: Forecast) : ForecastResponse()
+data class Error(val error: String) : ForecastResponse()
+
 data class Forecast(val latitude: Double,
                     val longitude: Double,
                     val timezone: String,

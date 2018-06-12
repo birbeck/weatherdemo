@@ -1,15 +1,11 @@
 package com.birbeck.libdarksky
 
-data class ForecastRequest(val key: ApiKey,
-                           val location: Location,
-                           val exclude: List<Exclude>? = DarkSkyClient.exclude,
-                           val extend: List<Extend>? = DarkSkyClient.extend,
-                           val language: Language? = DarkSkyClient.language,
-                           val units: Units? = DarkSkyClient.units)
-
-data class ApiKey(val value: String)
-
-data class Location(val latitude: Double, val longitude: Double)
+data class ForecastRequest(val latitude: Double,
+                           val longitude: Double,
+                           val exclude: List<Exclude>? = null,
+                           val extend: List<Extend>? = null,
+                           val language: Language? = null,
+                           val units: Units? = null)
 
 enum class Extend(val value: String) {
     HOURLY("hourly")

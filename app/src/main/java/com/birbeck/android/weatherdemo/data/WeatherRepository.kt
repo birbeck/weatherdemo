@@ -1,10 +1,9 @@
 package com.birbeck.android.weatherdemo.data
 
 import android.app.Application
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.MediatorLiveData
 import android.arch.lifecycle.MutableLiveData
 import android.content.Context
+import android.location.Location
 import android.location.LocationManager
 import com.birbeck.android.weatherdemo.BuildConfig
 import com.birbeck.libdarksky.*
@@ -17,55 +16,50 @@ class WeatherRepository(application: Application) {
     enum class RefreshStatus { RUNNING, COMPLETE, ERROR }
 
     private val mWeatherDao = WeatherDatabase.getInstance(application).weatherDao()
-    private val mObservableWeather = MediatorLiveData<WeatherEntity>()
     private val mRefreshStatus = MutableLiveData<RefreshStatus>()
+    private val mLocationManager = application.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
     init {
         DarkSkyClient.debugLogging = BuildConfig.DEBUG
-        mObservableWeather.addSource<WeatherEntity>(mWeatherDao.getCurrent(), {
-            if (it == null || it.time * 1000 < System.currentTimeMillis() - (15 * 60 * 1000)) {
-                refreshWeather(application)
-            } else {
-                mObservableWeather.postValue(it)
-            }
-        })
+        DarkSkyClient.cacheDir = application.cacheDir
     }
 
-    fun getCurrent() = mObservableWeather
+    fun getCurrent() = mWeatherDao.getCurrent()
 
-    fun refreshWeather(context: Context): LiveData<RefreshStatus> {
-        val (lat, lng) = getLocation(context)
+    fun refreshWeather(): MutableLiveData<RefreshStatus> {
         doAsync {
-            try {
-                val forecast = DarkSkyClient.getInstance().forecast(ForecastRequest(
-                        ApiKey(BuildConfig.DarkSkyApiKey), Location(lat, lng),
-                        exclude = listOf(Exclude.MINUTELY, Exclude.HOURLY, Exclude.ALERTS, Exclude.FLAGS)))
-                val weatherEntity = WeatherEntity(temperature = forecast.currently?.temperature!!,
-                        apparentTemperature = forecast.currently?.apparentTemperature!!,
-                        summary = forecast.currently?.summary!!,
-                        icon = forecast.currently?.icon!!,
-                        highTemperature = forecast.daily?.data?.get(0)?.temperatureHigh!!,
-                        lowTemperature = forecast.daily?.data?.get(0)?.temperatureLow!!,
-                        time = forecast.currently?.time!!)
-                mWeatherDao.update(weatherEntity)
-                mObservableWeather.postValue(weatherEntity)
-                mRefreshStatus.postValue(RefreshStatus.COMPLETE)
-            } catch (e: Exception) {
-                mRefreshStatus.postValue(RefreshStatus.ERROR)
-                AnkoLogger(this::class.java).error { e }
+            val (lat, lng) = getLocation()
+            val response = DarkSkyClient.getInstance(ApiKey(BuildConfig.DarkSkyApiKey))
+                    .forecast(ForecastRequest(lat, lng,
+                            exclude = listOf(Exclude.MINUTELY, Exclude.HOURLY, Exclude.ALERTS, Exclude.FLAGS)))
+            when (response) {
+                is Success -> {
+                    val weatherEntity = WeatherEntity(temperature = response.forecast.currently?.temperature,
+                            apparentTemperature = response.forecast.currently?.apparentTemperature,
+                            summary = response.forecast.currently?.summary,
+                            icon = response.forecast.currently?.icon,
+                            highTemperature = response.forecast.daily?.data?.get(0)?.temperatureHigh,
+                            lowTemperature = response.forecast.daily?.data?.get(0)?.temperatureLow,
+                            time = response.forecast.currently?.time!!)
+                    mWeatherDao.update(weatherEntity)
+                    mRefreshStatus.postValue(RefreshStatus.COMPLETE)
+                }
+                is Error -> {
+                    mRefreshStatus.postValue(RefreshStatus.ERROR)
+                    AnkoLogger(this::class.java).error { response.error }
+                }
             }
         }
-        mRefreshStatus.postValue(RefreshStatus.RUNNING)
+        mRefreshStatus.value = RefreshStatus.RUNNING
         return mRefreshStatus
     }
 
-    private fun getLocation(context: Context): Array<Double> {
-        var location: android.location.Location? = null
+    private fun getLocation(): Array<Double> {
+        var location: Location? = null
         try {
-            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
+            location = mLocationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
         } catch (e: SecurityException) {
-            AnkoLogger(this::class.java).error { "$e" }
+            AnkoLogger(this::class.java).error { e.message }
         }
         return if (location != null)
             arrayOf(location.latitude, location.longitude)

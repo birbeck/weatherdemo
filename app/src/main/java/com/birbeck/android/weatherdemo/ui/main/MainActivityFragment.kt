@@ -35,8 +35,6 @@ class MainActivityFragment : Fragment() {
                 activity?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             requestPermissions(
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0)
-        } else {
-            mViewModel.setViewLoaded(true)
         }
     }
 
@@ -44,9 +42,8 @@ class MainActivityFragment : Fragment() {
         when (requestCode) {
             0 -> {
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    mViewModel.setLocationPermissionGranted()
+                    mViewModel.onRefresh()
                 }
-                mViewModel.setViewLoaded(true)
             }
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }

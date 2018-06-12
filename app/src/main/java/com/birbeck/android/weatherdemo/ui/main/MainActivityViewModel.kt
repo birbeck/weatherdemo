@@ -2,10 +2,8 @@ package com.birbeck.android.weatherdemo.ui.main
 
 import android.app.Application
 import android.arch.lifecycle.AndroidViewModel
-import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.MediatorLiveData
 import android.arch.lifecycle.MutableLiveData
-import android.support.v4.widget.SwipeRefreshLayout
 import com.birbeck.android.weatherdemo.data.WeatherEntity
 import com.birbeck.android.weatherdemo.data.WeatherRepository
 import com.birbeck.android.weatherdemo.data.WeatherRepository.RefreshStatus
@@ -15,16 +13,32 @@ import java.util.concurrent.TimeUnit
 
 class MainActivityViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val mRepository = WeatherRepository(application)
-    private val mCurrentWeather = MediatorLiveData<WeatherEntity>()
-    private val mViewLoaded = MutableLiveData<Boolean>()
+    val isLoading = MutableLiveData<Boolean>()
+    val weather = MediatorLiveData<WeatherEntity>()
 
+    private val mRefreshStatus = MediatorLiveData<RefreshStatus>()
+    private val mRepository = WeatherRepository(application)
     private var mExecutorService: ScheduledExecutorService? = null
 
     init {
-        mCurrentWeather.value = null
-        mViewLoaded.value = false
-        mViewLoaded.observeForever { if (it == true) onViewLoaded() }
+        mRefreshStatus.observeForever {
+            when (it) {
+                RefreshStatus.RUNNING -> isLoading.value = true
+                RefreshStatus.COMPLETE, RefreshStatus.ERROR -> isLoading.value = false
+            }
+        }
+
+        val myLiveData = mRepository.refreshWeather()
+        mRefreshStatus.addSource(myLiveData, {
+            when (it) {
+                RefreshStatus.COMPLETE -> {
+                    weather.addSource(mRepository.getCurrent(), { weather.value = it })
+                    scheduleWeatherUpdateJob()
+                    mRefreshStatus.removeSource(myLiveData)
+                }
+            }
+            mRefreshStatus.value = it
+        })
     }
 
     override fun onCleared() {
@@ -32,36 +46,23 @@ class MainActivityViewModel(application: Application) : AndroidViewModel(applica
         cancelWeatherUpdateJob()
     }
 
-    fun getCurrent(): LiveData<WeatherEntity> = mCurrentWeather
-
-    fun onRefresh(view: SwipeRefreshLayout) = mRepository.refreshWeather(getApplication())
-            .observeForever {
-                when (it) {
-                    RefreshStatus.COMPLETE, RefreshStatus.ERROR -> view.isRefreshing = false
-                    else -> {
-                    }
+    fun onRefresh() {
+        val myLiveData = mRepository.refreshWeather()
+        mRefreshStatus.addSource(myLiveData, {
+            when (it) {
+                RefreshStatus.COMPLETE, RefreshStatus.ERROR -> {
+                    mRefreshStatus.removeSource(myLiveData)
                 }
             }
-
-    fun setViewLoaded(value: Boolean) {
-        mViewLoaded.postValue(value)
-    }
-
-    fun setLocationPermissionGranted() {
-        mCurrentWeather.value = null
-        mRepository.refreshWeather(getApplication())
-    }
-
-    private fun onViewLoaded() {
-        mCurrentWeather.addSource(mRepository.getCurrent(), { mCurrentWeather.value = it })
-        scheduleWeatherUpdateJob()
+            mRefreshStatus.value = it
+        })
     }
 
     private fun scheduleWeatherUpdateJob() {
         if (mExecutorService == null) {
             mExecutorService = Executors.newSingleThreadScheduledExecutor()
                     .apply {
-                        scheduleAtFixedRate({ mRepository.refreshWeather(getApplication()) },
+                        scheduleAtFixedRate({ mRepository.refreshWeather() },
                                 15, 15, TimeUnit.MINUTES)
                     }
         }
