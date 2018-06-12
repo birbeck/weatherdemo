@@ -50,7 +50,7 @@ class WeatherRepository(application: Application) {
                 }
             }
         }
-        mRefreshStatus.value = RefreshStatus.RUNNING
+        mRefreshStatus.postValue(RefreshStatus.RUNNING)
         return mRefreshStatus
     }
 

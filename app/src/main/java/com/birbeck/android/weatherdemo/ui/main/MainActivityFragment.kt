@@ -35,16 +35,14 @@ class MainActivityFragment : Fragment() {
                 activity?.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)) {
             requestPermissions(
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 0)
+        } else {
+            mViewModel.setViewLoaded(true)
         }
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
-            0 -> {
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    mViewModel.onRefresh()
-                }
-            }
+            0 -> mViewModel.setViewLoaded(true)
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
